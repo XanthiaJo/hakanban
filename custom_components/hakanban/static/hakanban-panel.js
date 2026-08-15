@@ -84,7 +84,7 @@ export class HakanbanPanel extends HTMLElement {
       this._data = payload;
       // Resolve the initial board: explicit config > localStorage > first board.
       if (this._initialBoardWant) {
-        const want = this._initialBoardWant.toLowerCase();
+        const want = String(this._initialBoardWant).toLowerCase();
         const match = payload.boards.find((b) => b.id === this._initialBoardWant) ||
           payload.boards.find((b) => (b.title || "").toLowerCase() === want);
         if (match) this._activeBoardId = match.id;
@@ -103,12 +103,17 @@ export class HakanbanPanel extends HTMLElement {
   }
 
   _build() {
+    this._collapsed = localStorage.getItem("hakanban_toolbar_collapsed") === "1";
     this.shadowRoot.innerHTML = `<style>${STYLES}</style>
       <div class="hk-root">
-        <div class="hk-toolbar" id="toolbar"></div>
+        <div class="hk-toolbar-wrap ${this._collapsed ? "collapsed" : ""}" id="toolbar-wrap">
+          <div class="hk-toolbar" id="toolbar"></div>
+          <div class="hk-collapse-handle" id="collapse-handle" title="Click to ${this._collapsed ? "expand" : "collapse"} toolbar"></div>
+        </div>
         <div id="filterbar"></div>
         <div id="host" style="flex:1;min-height:0;display:flex"></div>
       </div>`;
+    this.shadowRoot.getElementById("collapse-handle").addEventListener("click", () => this._toggleToolbar());
     this._boardEl = document.createElement("hakanban-board");
     this._boardEl.style.flex = "1";
     this._boardEl.style.minWidth = "0";
@@ -116,6 +121,15 @@ export class HakanbanPanel extends HTMLElement {
     this._boardEl.hass = this._hass;
     this.shadowRoot.getElementById("host").appendChild(this._boardEl);
     this._built = true;
+  }
+
+  _toggleToolbar() {
+    this._collapsed = !this._collapsed;
+    localStorage.setItem("hakanban_toolbar_collapsed", this._collapsed ? "1" : "0");
+    const wrap = this.shadowRoot.getElementById("toolbar-wrap");
+    if (wrap) wrap.classList.toggle("collapsed", this._collapsed);
+    const handle = this.shadowRoot.getElementById("collapse-handle");
+    if (handle) handle.title = `Click to ${this._collapsed ? "expand" : "collapse"} toolbar`;
   }
 
   _renderToolbar() {

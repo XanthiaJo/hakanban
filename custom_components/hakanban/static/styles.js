@@ -31,7 +31,6 @@ export const STYLES = `
 .hk-toolbar {
   display: flex; align-items: center; gap: 8px;
   padding: 10px 16px; flex-wrap: wrap;
-  border-bottom: 1px solid var(--hk-divider);
   background: var(--app-header-background-color, var(--hk-accent));
   color: var(--app-header-text-color, #fff);
 }
@@ -54,6 +53,39 @@ export const STYLES = `
 .hk-iconbtn:hover { background: rgba(255,255,255,.34); }
 .hk-iconbtn:disabled { opacity: .4; cursor: default; }
 .hk-iconbtn:disabled:hover { background: rgba(255,255,255,.16); }
+
+/* Collapsible toolbar — interactive bottom edge.
+   Hovering the thin edge line turns it primary-coloured and casts a thin theme shadow. Click toggles collapse/expand. */
+.hk-toolbar-wrap { position: relative; }
+.hk-toolbar-wrap.collapsed .hk-toolbar { display: none; }
+
+.hk-collapse-handle {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  height: 20px;
+  cursor: pointer;
+  z-index: 10;
+  background: transparent;
+  clip-path: inset(0 -20px -20px -20px);
+  transition: box-shadow .15s;
+}
+.hk-collapse-handle::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--hk-divider);
+  transition: background .15s, box-shadow .15s;
+}
+.hk-collapse-handle:hover::before,
+.hk-toolbar-wrap.collapsed .hk-collapse-handle:hover::before {
+  background: var(--primary-color, var(--hk-accent, #0079bf));
+  box-shadow: 0 2px 4px color-mix(in srgb, var(--primary-color, var(--hk-accent, #0079bf)) 45%, transparent);
+}
 
 .hk-board {
   flex: 1; min-height: 0; display: flex; gap: var(--hk-gap);
