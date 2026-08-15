@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Hakanban Lovelace card test</title>
+    <style>
+      html, body { height: 100%; margin: 0; background: #1d2125; color: #e6edf3; font-family: sans-serif; }
+      body { padding: 20px; }
+      h1 { font-size: 1.1rem; margin: 0 0 12px; }
+      /* Stub ha-card styles so the card wrapper looks right. */
+      ha-card {
+        display: block;
+        background: var(--card-background-color);
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,.3);
+        overflow: hidden;
+      }
+      /* Provide the HA theme vars the components expect. */
+      :root {
+        --primary-text-color: #e6edf3;
+        --secondary-text-color: #9aa4b2;
+        --primary-color: #4f9dff;
+        --card-background-color: #22272e;
+        --ha-card-background: #2d333b;
+        --divider-color: rgba(255,255,255,.12);
+        --app-header-background-color: #1b3a5b;
+        --app-header-text-color: #fff;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Hakanban Lovelace card test</h1>
+
+    <!-- Stub <ha-card> as a simple custom element (HA provides this in production). -->
+    <script>
+      if (!customElements.get("ha-card")) {
+        customElements.define("ha-card", class extends HTMLElement {});
+      }
+    </script>
+
+    <script type="module">
+      import "/tests/browser/mock-hass.js";
+      import "/custom_components/hakanban/static/hakanban-card.js";
+
+      // Create the card with a config — try "Demo Board" (the mock's seed board).
+      const card = document.createElement("hakanban-card");
+      card.setConfig({ type: "custom:hakanban-card", board: "Demo Board", height: "500px" });
+      document.body.appendChild(card);
+      card.hass = window.__mockHass;
+      window.__card = card;
+
+      // Surface unhandled errors for the test harness to read.
+      window.__errors = [];
+      window.addEventListener("error", (e) => window.__errors.push(String(e.message)));
+      window.addEventListener("unhandledrejection", (e) => window.__errors.push("promise: " + e.reason));
+    </script>
+  </body>
+</html>
