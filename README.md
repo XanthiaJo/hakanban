@@ -5,6 +5,20 @@
 [![HACS Custom](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://hacs.xyz)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
+> **This fork** is based on Neil Ellis's [Hakanban](https://github.com/neilellis/hakanban) `v0.1.8` and adds several frontend and UX features on top of it.
+>
+> ## What's added in this fork (v0.1.10)
+>
+> - **Inline checklists** — checklist items render and are toggleable directly on the card face.
+> - **Markdown card descriptions** — descriptions are rendered as formatted markdown on the card.
+> - **Auto-comments on move** — moving a card between columns automatically records a comment with the user who moved it.
+> - **Display options dialog** — a ⚙ toolbar menu lets you toggle every card element (title, description, checklists, labels, card number, due date, comments, assignees) and control comment sub-options (user, moved from/to, date, time).
+> - **Full toolbar in the Lovelace card** — the dashboard card now embeds the full panel, so board tabs, undo/redo, search, filter, background, rename, and delete are all available on dashboards.
+> - **Collapsible toolbar** — hover the bottom edge of the toolbar to highlight the seam in the theme primary colour, click to collapse or expand. State is remembered in `localStorage`.
+> - **Browser test harness** for the display options.
+>
+> ---
+
 Hakanban is a fast, drag-and-drop Kanban board — but instead of wrapping an external
 service like Todoist or Kanboard, it stores and manages everything **natively in Home
 Assistant** and reuses HA's own concepts:
