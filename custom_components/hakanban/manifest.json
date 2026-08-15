@@ -1,13 +1,13 @@
 {
   "domain": "hakanban",
   "name": "Hakanban",
-  "codeowners": ["@neilellis"],
+  "codeowners": ["@neilellis", "@XanthiaJo"],
   "config_flow": true,
   "dependencies": ["http", "websocket_api", "frontend", "todo", "calendar"],
-  "documentation": "https://github.com/neilellis/hakanban",
+  "documentation": "https://github.com/XanthiaJo/hakanban",
   "integration_type": "hub",
   "iot_class": "local_push",
-  "issue_tracker": "https://github.com/neilellis/hakanban/issues",
+  "issue_tracker": "https://github.com/XanthiaJo/hakanban/issues",
   "single_config_entry": true,
   "version": "0.1.10"
 }

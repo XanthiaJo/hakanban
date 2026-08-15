@@ -1,10 +1,3 @@
-# Hakanban
-
-**A Trello-style Kanban board that lives *inside* Home Assistant.**
-
-[![HACS Custom](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://hacs.xyz)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-
 > **This fork** is based on Neil Ellis's [Hakanban](https://github.com/neilellis/hakanban) `v0.1.8` and adds several frontend and UX features on top of it.
 >
 > ## What's added in this fork (v0.1.10)
@@ -17,7 +10,15 @@
 > - **Collapsible toolbar** — hover the bottom edge of the toolbar to highlight the seam in the theme primary colour, click to collapse or expand. State is remembered in `localStorage`.
 > - **Browser test harness** for the display options.
 >
-> ---
+
+---
+
+# Hakanban
+
+**A Trello-style Kanban board that lives *inside* Home Assistant.**
+
+[![HACS Custom](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://hacs.xyz)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 Hakanban is a fast, drag-and-drop Kanban board — but instead of wrapping an external
 service like Todoist or Kanboard, it stores and manages everything **natively in Home
@@ -71,7 +72,7 @@ Hakanban is distributed as a **custom repository**:
 
 1. Open **HACS** in Home Assistant.
 2. Click the **three-dot menu** (top right) → **Custom repositories**.
-3. Add the repository URL `https://github.com/neilellis/hakanban`, choose category
+3. Add the repository URL `https://github.com/XanthiaJo/hakanban`, choose category
    **Integration**, and click **Add**.
 4. Find **Hakanban** in the list and click **Install**.
 5. **Restart** Home Assistant.
