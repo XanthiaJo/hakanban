@@ -160,9 +160,11 @@ const handlers = {
       card.comments = card.comments || [];
       card.comments.push({
         id: uid(),
-        author: "Home Assistant",
+        author: "Test User",
         ts: new Date().toISOString(),
         text: `Moved from ${fromCol.title} to ${toCol.title}`,
+        move_from: fromCol.title,
+        move_to: toCol.title,
       });
     }
     fromCol.cards = fromCol.cards.filter((c) => c.id !== card_id);

@@ -438,6 +438,7 @@ class HakanbanData:
         to_column: str,
         position: int | None = None,
         to_board: str | None = None,
+        user: str | None = None,
     ) -> dict[str, Any]:
         card = self._require_card(card_id)
         from_column = card["column_id"]
@@ -459,9 +460,11 @@ class HakanbanData:
             card.setdefault("comments", []).append(
                 {
                     "id": _uid(),
-                    "author": "Home Assistant",
+                    "author": user or "Home Assistant",
                     "ts": _now(),
                     "text": f"Moved from {from_label} to {to_label}",
+                    "move_from": from_label,
+                    "move_to": to_label,
                 }
             )
 

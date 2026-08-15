@@ -1,8 +1,11 @@
 // <hakanban-panel> — the full-page sidebar app. Home Assistant injects `hass`.
+// Dialogs (rename, options) live in dialogs.js.
 
 import { STYLES } from "./styles.js";
 import { HakanbanApi } from "./api.js";
 import { escapeHtml, contrastText, debounce } from "./util.js";
+import { loadDisplayOpts } from "./display-opts.js";
+import { openRenameDialog, openOptionsDialog } from "./dialogs.js";
 import "./board-view.js";
 
 const BACKGROUNDS = [
@@ -22,6 +25,7 @@ export class HakanbanPanel extends HTMLElement {
     this._showFilter = false;
     this._showBg = false;
     this._built = false;
+    this._displayOpts = loadDisplayOpts();
   }
 
   set hass(hass) {
@@ -100,6 +104,7 @@ export class HakanbanPanel extends HTMLElement {
     this._boardEl.style.minWidth = "0";
     this._boardEl.api = this._api;
     this._boardEl.hass = this._hass;
+    this._boardEl.displayOpts = this._displayOpts;
     this.shadowRoot.getElementById("host").appendChild(this._boardEl);
     this._built = true;
   }
@@ -126,7 +131,8 @@ export class HakanbanPanel extends HTMLElement {
       <button class="hk-iconbtn" id="filter-btn" title="Filter by label">⚑</button>
       <button class="hk-iconbtn" id="bg-btn" title="Board background">🎨</button>
       <button class="hk-iconbtn" id="edit-board" title="Rename board">✎</button>
-      <button class="hk-iconbtn" id="del-board" title="Delete board">🗑</button>`;
+      <button class="hk-iconbtn" id="del-board" title="Delete board">🗑</button>
+      <button class="hk-iconbtn" id="opts-btn" title="Display options">⚙</button>`;
 
     tb.querySelector("#undo-btn").addEventListener("click", () => this._api.undo());
     tb.querySelector("#redo-btn").addEventListener("click", () => this._api.redo());
@@ -150,7 +156,7 @@ export class HakanbanPanel extends HTMLElement {
     });
     tb.querySelector("#edit-board").addEventListener("click", () => {
       const board = this._activeBoard();
-      if (board) this._openRenameDialog(board.id);
+      if (board) openRenameDialog(this.shadowRoot, board, this._api);
     });
     tb.querySelector("#del-board").addEventListener("click", () => {
       const board = this._activeBoard();
@@ -167,6 +173,11 @@ export class HakanbanPanel extends HTMLElement {
       this._showFilter = false;
       this._renderFilterbar();
     });
+    tb.querySelector("#opts-btn").addEventListener("click", () =>
+      openOptionsDialog(this.shadowRoot, this._displayOpts, (opts) => {
+        if (this._boardEl) this._boardEl.displayOpts = opts;
+      })
+    );
 
     const search = tb.querySelector("#search");
     const apply = debounce(() => {
@@ -217,47 +228,6 @@ export class HakanbanPanel extends HTMLElement {
 
   _applyFilter() {
     if (this._boardEl) this._boardEl.filter = { query: this._query, labels: this._activeLabels };
-  }
-
-  // Modal rename, opened from the toolbar's ✎ button (keeps tab clicks for
-  // switching boards only, and avoids inline-edit clashes with re-render).
-  _openRenameDialog(boardId) {
-    const board = (this._data?.boards || []).find((b) => b.id === boardId);
-    if (!board) return;
-    this.shadowRoot.querySelector(".hk-dialog-back")?.remove(); // one at a time
-
-    const back = document.createElement("div");
-    back.className = "hk-modal-back hk-dialog-back";
-    back.innerHTML = `
-      <div class="hk-modal hk-dialog" role="dialog" aria-modal="true" style="width:min(420px,100%)">
-        <h2>Rename board</h2>
-        <div class="hk-row" style="margin-top:12px">
-          <input type="text" id="hk-rename-input" style="flex:1" value="${escapeHtml(board.title)}" maxlength="120">
-        </div>
-        <div class="hk-modal-actions">
-          <span class="grow"></span>
-          <button class="hk-btn secondary" id="hk-rename-cancel">Cancel</button>
-          <button class="hk-btn" id="hk-rename-save">Save</button>
-        </div>
-      </div>`;
-    this.shadowRoot.appendChild(back);
-
-    const input = back.querySelector("#hk-rename-input");
-    const close = () => back.remove();
-    const save = () => {
-      const v = input.value.trim();
-      if (v && v !== board.title) this._api.updateBoard(boardId, { title: v });
-      close();
-    };
-    back.addEventListener("mousedown", (e) => { if (e.target === back) close(); });
-    back.querySelector("#hk-rename-cancel").addEventListener("click", close);
-    back.querySelector("#hk-rename-save").addEventListener("click", save);
-    input.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") { e.preventDefault(); save(); }
-      else if (e.key === "Escape") { e.preventDefault(); close(); }
-    });
-    input.focus();
-    input.select();
   }
 
   _renderBoard() {
