@@ -40,7 +40,12 @@ def installed_blueprints(hass: HomeAssistant) -> list[str]:
 
 
 def install_blueprint(hass: HomeAssistant, filename: str) -> None:
-    """Copy a built-in blueprint into the user's config/blueprints tree."""
+    """Copy a built-in blueprint into the user's config/blueprints tree.
+
+    Overwrites any existing copy so blueprint updates reach the user.
+    Automations created from the blueprint are not affected — they live
+    separately in automations.yaml.
+    """
     source = _source_dir() / filename
     if not source.is_file():
         raise ValueError(f"Unknown blueprint: {filename}")
