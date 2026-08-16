@@ -153,6 +153,43 @@ jobs:
 
       - name: Create GitHub release
         run: |
-          gh release create "v${{ steps.version.outputs.new_version }}" --title "v${{ steps.version.outputs.new_version }}" --generate-notes
+          VERSION="v${{ steps.version.outputs.new_version }}"
+
+          # Categorize commits since last tag
+          LATEST_TAG=$(git tag --list 'v*' --sort=-v:refname | sed -n '2p')
+          [ -z "$LATEST_TAG" ] && LATEST_TAG=$(git rev-list --max-parents=0 HEAD)
+
+          FEATURES=$(git log "$LATEST_TAG"..HEAD --pretty=format:'%s' | grep -E '^feat(\([^)]*\))?!?:' | sed 's/^/- /')
+          FIXES=$(git log "$LATEST_TAG"..HEAD --pretty=format:'%s' | grep -E '^fix(\([^)]*\))?!?:' | sed 's/^/- /')
+          PERF=$(git log "$LATEST_TAG"..HEAD --pretty=format:'%s' | grep -E '^perf(\([^)]*\))?!?:' | sed 's/^/- /')
+          DOCS=$(git log "$LATEST_TAG"..HEAD --pretty=format:'%s' | grep -E '^docs(\([^)]*\))?!?:' | sed 's/^/- /')
+          REFACTOR=$(git log "$LATEST_TAG"..HEAD --pretty=format:'%s' | grep -E '^refactor(\([^)]*\))?!?:' | sed 's/^/- /')
+          TESTS=$(git log "$LATEST_TAG"..HEAD --pretty=format:'%s' | grep -E '^test(\([^)]*\))?!?:' | sed 's/^/- /')
+          CHORE=$(git log "$LATEST_TAG"..HEAD --pretty=format:'%s' | grep -E '^chore(\([^)]*\))?!?:' | sed 's/^/- /')
+          CI=$(git log "$LATEST_TAG"..HEAD --pretty=format:'%s' | grep -E '^ci(\([^)]*\))?!?:' | sed 's/^/- /')
+          BUILD=$(git log "$LATEST_TAG"..HEAD --pretty=format:'%s' | grep -E '^build(\([^)]*\))?!?:' | sed 's/^/- /')
+          STYLE=$(git log "$LATEST_TAG"..HEAD --pretty=format:'%s' | grep -E '^style(\([^)]*\))?!?:' | sed 's/^/- /')
+
+          BODY=""
+          append_section() {
+            local title="$1"
+            local content="$2"
+            if [ -n "$content" ]; then
+              BODY="${BODY}## ${title}\n\n${content}\n\n"
+            fi
+          }
+
+          append_section "Features" "$FEATURES"
+          append_section "Bug Fixes" "$FIXES"
+          append_section "Performance" "$PERF"
+          append_section "Documentation" "$DOCS"
+          append_section "Refactoring" "$REFACTOR"
+          append_section "Tests" "$TESTS"
+          append_section "Maintenance" "$CHORE"
+          append_section "CI/CD" "$CI"
+          append_section "Build" "$BUILD"
+          append_section "Style" "$STYLE"
+
+          printf '%s' "$BODY" | gh release create "$VERSION" --title "$VERSION" --notes-file -
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
