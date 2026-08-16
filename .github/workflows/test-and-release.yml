@@ -7,12 +7,27 @@ on:
   pull_request:
     branches:
       - dev
+  schedule:
+    - cron: "0 6 * * 1"
   workflow_dispatch:
 
 jobs:
+  validate:
+    name: Validate (HACS + hassfest)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: home-assistant/actions/hassfest@master
+      - uses: hacs/action@main
+        with:
+          category: integration
+
   test:
     name: Run Tests
+    needs: validate
     runs-on: ubuntu-latest
+    # Skip tests on the weekly schedule — only validate runs weekly.
+    if: github.event_name != 'schedule'
     steps:
       - uses: actions/checkout@v4
 
