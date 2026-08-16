@@ -427,7 +427,12 @@ class HakanbanData:
             card.pop("completed", None)
         self._commit(
             card["board_id"], event,
-            {"board_id": card["board_id"], "column_id": card["column_id"], "card_id": card_id},
+            {
+                "board_id": card["board_id"],
+                "column_id": card["column_id"],
+                "card_id": card_id,
+                "title": card["title"],
+            },
         )
         return card
 

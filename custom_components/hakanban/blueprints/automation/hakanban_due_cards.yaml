@@ -1,0 +1,116 @@
+blueprint:
+  name: Hakanban — Scheduled check for due cards
+  description: >
+    Runs on a schedule and triggers an action for each card that matches
+    the due date criteria. Check for cards due today, due in a number of
+    days, or overdue by a number of days. Optionally skip completed cards.
+  domain: automation
+  source_url: https://github.com/XanthiaJo/hakanban
+  input:
+    run_time:
+      name: Time
+      description: When to check for due cards each day.
+      default: "08:00:00"
+      selector:
+        time:
+    when_type:
+      name: When
+      description: When should the card be due relative to the check time?
+      default: due_today
+      selector:
+        select:
+          options:
+            - label: Overdue by
+              value: overdue
+            - label: Due today
+              value: due_today
+            - label: Due in
+              value: relative
+    amount:
+      name: Amount
+      description: >
+        Number of days/weeks/months. Set to 0 with "Overdue by" to match
+        all overdue cards. Only used with "Overdue by" or "Due in".
+      default: 0
+      selector:
+        number:
+          min: 0
+          max: 28
+          step: 1
+          mode: slider
+    unit:
+      name: Unit
+      description: Only used with "Overdue by" or "Due in".
+      default: days
+      selector:
+        select:
+          options:
+            - label: days
+              value: days
+            - label: weeks
+              value: weeks
+            - label: months
+              value: months
+    include_completed:
+      name: Include completed cards
+      description: Tick to also match cards that are already completed.
+      default: false
+      selector:
+        boolean:
+    board:
+      name: Board
+      description: Only check cards on this board. Leave blank for all boards.
+      default: []
+      selector:
+        entity:
+          domain: calendar
+          integration: hakanban
+          multiple: true
+    action:
+      name: Action
+      description: >
+        What to do for each matching card. Variables available:
+        card_id, card_title, card_board_id, card_column_id, card_due, card_status.
+      default: []
+      selector:
+        action:
+
+variables:
+  board_ids: "{{ board | map('state_attr', 'board_id') | select('ne', None) | list if board else [] }}"
+  is_overdue: "{{ when_type == 'overdue' }}"
+  is_today: "{{ when_type == 'due_today' }}"
+  any_overdue: "{{ is_overdue and amount == 0 }}"
+  multiplier: >
+    {{ {'days': 1, 'weeks': 7, 'months': 30}[unit] | default(1) }}
+  offset: >
+    {{ -(amount * multiplier) if is_overdue else (amount * multiplier) }}
+  days_offset: "{{ 0 if is_today or any_overdue else offset }}"
+
+trigger:
+  - platform: time
+    at: !input run_time
+
+condition: []
+
+action:
+  - service: hakanban.get_due_cards
+    data:
+      board_ids: "{{ board_ids }}"
+      days_offset: "{{ days_offset }}"
+      include_completed: !input include_completed
+      overdue: "{{ any_overdue }}"
+    response_variable: due
+  - repeat:
+      for_each: "{{ due.cards }}"
+      sequence:
+        - variables:
+            card_id: "{{ repeat.item.card_id }}"
+            card_title: "{{ repeat.item.title }}"
+            card_board_id: "{{ repeat.item.board_id }}"
+            card_column_id: "{{ repeat.item.column_id }}"
+            card_due: "{{ repeat.item.due }}"
+            card_status: "{{ repeat.item.status }}"
+        - choose: []
+          default: !input action
+
+mode: single

@@ -129,7 +129,7 @@ history is capped at `UNDO_HISTORY_LIMIT` (50) states and reset to empty on load
 | `hakanban_card_created` | `board_id`, `column_id`, `card_id`, `title` |
 | `hakanban_card_updated` | `board_id`, `card_id`, `column_id?`, `action?` |
 | `hakanban_card_moved` | `board_id`, `card_id`, `from_column`, `to_column` |
-| `hakanban_card_completed` | `board_id`, `card_id`, `column_id` |
+| `hakanban_card_completed` | `board_id`, `card_id`, `column_id`, `title` |
 | `hakanban_card_deleted` | `board_id`, `card_id` |
 | `hakanban_board_changed` | `board_id`, `action` |
 

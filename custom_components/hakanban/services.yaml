@@ -140,3 +140,35 @@ create_column:
       required: true
       selector:
         text:
+
+get_due_cards:
+  name: Get due cards
+  description: Return cards due on a specific date or offset from today.
+  fields:
+    board_ids:
+      name: Board IDs
+      description: Limit to these boards. Leave blank for all boards.
+      selector:
+        object:
+    on_date:
+      name: Date
+      description: ISO date string (YYYY-MM-DD). Overrides days_offset if set.
+      example: "2026-08-16"
+      selector:
+        text:
+    days_offset:
+      name: Days offset
+      description: 0 = today, 7 = in a week, -7 = a week ago.
+      default: 0
+      selector:
+        number:
+          min: -365
+          max: 365
+          step: 1
+          mode: box
+    include_completed:
+      name: Include completed
+      description: Also return cards that are already completed.
+      default: false
+      selector:
+        boolean:

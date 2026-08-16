@@ -125,6 +125,10 @@ class HakanbanTodoListEntity(TodoListEntity):
             model="Board",
             entry_type=DeviceEntryType.SERVICE,
         )
+        self._attr_extra_state_attributes = {
+            "board_id": self._board_id,
+            "column_id": self._column_id,
+        }
         self._attr_todo_items = [
             self._to_item(card)
             for card in self._manager.cards_in_column(self._column_id)

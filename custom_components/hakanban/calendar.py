@@ -87,6 +87,7 @@ class HakanbanCalendarEntity(CalendarEntity):
             model="Board",
             entry_type=DeviceEntryType.SERVICE,
         )
+        self._attr_extra_state_attributes = {"board_id": self._board_id}
 
     @staticmethod
     def _card_event(card: dict[str, Any]) -> CalendarEvent | None:

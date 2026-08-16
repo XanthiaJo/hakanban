@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+from datetime import date, datetime, timedelta
+from typing import Any
+
 import voluptuous as vol
 
 from homeassistant.core import HomeAssistant, ServiceCall, SupportsResponse
@@ -16,6 +19,7 @@ SERVICE_UPDATE_CARD = "update_card"
 SERVICE_ADD_COMMENT = "add_comment"
 SERVICE_CREATE_BOARD = "create_board"
 SERVICE_CREATE_COLUMN = "create_column"
+SERVICE_GET_DUE_CARDS = "get_due_cards"
 
 ADD_CARD_SCHEMA = vol.Schema(
     {
@@ -56,6 +60,16 @@ CREATE_BOARD_SCHEMA = vol.Schema({vol.Required("title"): cv.string})
 
 CREATE_COLUMN_SCHEMA = vol.Schema(
     {vol.Required("board_id"): cv.string, vol.Required("title"): cv.string}
+)
+
+GET_DUE_CARDS_SCHEMA = vol.Schema(
+    {
+        vol.Optional("board_ids"): vol.All(cv.ensure_list, [cv.string]),
+        vol.Optional("on_date"): cv.string,
+        vol.Optional("days_offset"): vol.Coerce(int),
+        vol.Optional("include_completed"): cv.boolean,
+        vol.Optional("overdue"): cv.boolean,
+    }
 )
 
 
@@ -120,6 +134,53 @@ async def async_setup_services(hass: HomeAssistant) -> None:
             raise vol.Invalid(str(err)) from err
         return {"column_id": column["id"]}
 
+    async def get_due_cards(call: ServiceCall) -> dict:
+        mgr = _manager()
+        board_ids = call.data.get("board_ids") or list(mgr.boards.keys())
+        on_date_str = call.data.get("on_date")
+        days_offset = call.data.get("days_offset", 0)
+        include_completed = call.data.get("include_completed", False)
+        overdue = call.data.get("overdue", False)
+
+        if on_date_str:
+            target = date.fromisoformat(on_date_str)
+        else:
+            target = date.today() + timedelta(days=days_offset)
+
+        cards_out: list[dict[str, Any]] = []
+        for bid in board_ids:
+            for card in mgr.cards_in_board(bid):
+                due = card.get("due")
+                if not due:
+                    continue
+                status = card.get("status", "needs_action")
+                if not include_completed and status == "completed":
+                    continue
+                try:
+                    due_date = datetime.fromisoformat(due).date()
+                except (ValueError, TypeError):
+                    continue
+                if overdue:
+                    if due_date < date.today():
+                        cards_out.append({
+                            "card_id": card["id"],
+                            "title": card["title"],
+                            "board_id": card["board_id"],
+                            "column_id": card["column_id"],
+                            "due": due,
+                            "status": status,
+                        })
+                elif due_date == target:
+                    cards_out.append({
+                        "card_id": card["id"],
+                        "title": card["title"],
+                        "board_id": card["board_id"],
+                        "column_id": card["column_id"],
+                        "due": due,
+                        "status": status,
+                    })
+        return {"cards": cards_out}
+
     hass.services.async_register(
         DOMAIN, SERVICE_ADD_CARD, add_card, ADD_CARD_SCHEMA,
         supports_response=SupportsResponse.OPTIONAL,
@@ -135,6 +196,10 @@ async def async_setup_services(hass: HomeAssistant) -> None:
         DOMAIN, SERVICE_CREATE_COLUMN, create_column, CREATE_COLUMN_SCHEMA,
         supports_response=SupportsResponse.OPTIONAL,
     )
+    hass.services.async_register(
+        DOMAIN, SERVICE_GET_DUE_CARDS, get_due_cards, GET_DUE_CARDS_SCHEMA,
+        supports_response=SupportsResponse.OPTIONAL,
+    )
 
 
 def async_unload_services(hass: HomeAssistant) -> None:
@@ -145,5 +210,6 @@ def async_unload_services(hass: HomeAssistant) -> None:
         SERVICE_ADD_COMMENT,
         SERVICE_CREATE_BOARD,
         SERVICE_CREATE_COLUMN,
+        SERVICE_GET_DUE_CARDS,
     ):
         hass.services.async_remove(DOMAIN, service)

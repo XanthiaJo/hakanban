@@ -111,3 +111,57 @@ export function openOptionsDialog(shadowRoot, opts, board, api, onSave) {
     })
   );
 }
+
+// Open the blueprint manager dialog. Shows available blueprints with
+// checkboxes; checked = installed. Toggling installs/uninstalls immediately.
+export function openBlueprintDialog(shadowRoot, api) {
+  shadowRoot.querySelector(".hk-dialog-back")?.remove();
+
+  const back = document.createElement("div");
+  back.className = "hk-modal-back hk-dialog-back";
+  back.innerHTML = `
+      <div class="hk-modal hk-dialog" role="dialog" aria-modal="true" style="width:min(480px,100%)">
+        <h2>Automation blueprints</h2>
+        <div class="hk-opt-help" style="margin-bottom:12px">Blueprints give you a head start with common automations. Tick one to install it, then find it in Settings → Automations & Scenes → Blueprints. You can also build automations manually using Hakanban entities and events.</div>
+        <div id="hk-bp-list" style="display:flex;flex-direction:column;gap:8px">
+          <div style="color:var(--secondary-text-color)">Loading…</div>
+        </div>
+        <div class="hk-modal-actions">
+          <span class="grow"></span>
+          <button class="hk-btn" id="hk-bp-close">Done</button>
+        </div>
+      </div>`;
+  shadowRoot.appendChild(back);
+
+  const close = () => back.remove();
+  back.addEventListener("mousedown", (e) => { if (e.target === back) close(); });
+  back.querySelector("#hk-bp-close").addEventListener("click", close);
+
+  const listEl = back.querySelector("#hk-bp-list");
+
+  api.listBlueprints().then((blueprints) => {
+    if (!blueprints || blueprints.length === 0) {
+      listEl.innerHTML = `<div style="color:var(--secondary-text-color)">No blueprints available.</div>`;
+      return;
+    }
+    listEl.innerHTML = blueprints
+      .map(
+        (bp) =>
+          `<label class="hk-opt-row"><input type="checkbox" data-bp="${escapeHtml(bp.filename)}" ${bp.installed ? "checked" : ""}><span>${escapeHtml(bp.name)}</span></label>`
+      )
+      .join("");
+
+    listEl.querySelectorAll("[data-bp]").forEach((cb) => {
+      cb.addEventListener("change", () => {
+        const filename = cb.dataset.bp;
+        if (cb.checked) {
+          api.installBlueprint(filename);
+        } else {
+          api.uninstallBlueprint(filename);
+        }
+      });
+    });
+  }).catch(() => {
+    listEl.innerHTML = `<div style="color:var(--secondary-text-color)">Failed to load blueprints.</div>`;
+  });
+}

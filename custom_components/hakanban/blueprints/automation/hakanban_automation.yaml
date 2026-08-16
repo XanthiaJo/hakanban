@@ -1,0 +1,87 @@
+blueprint:
+  name: Hakanban — Card event trigger
+  description: >
+    React to a Hakanban card being created, moved between lists, completed,
+    or deleted. Choose the trigger event, optionally filter by board and
+    lists, and pick the action to run — just like a normal automation but
+    with Hakanban-specific triggers.
+  domain: automation
+  source_url: https://github.com/XanthiaJo/hakanban
+  input:
+    trigger_event:
+      name: Trigger
+      description: What should happen to a card to trigger this automation?
+      default: hakanban_card_completed
+      selector:
+        select:
+          options:
+            - label: Card created
+              value: hakanban_card_created
+            - label: Card moved
+              value: hakanban_card_moved
+            - label: Card completed
+              value: hakanban_card_completed
+            - label: Card deleted
+              value: hakanban_card_deleted
+    board:
+      name: Board
+      description: Only trigger for cards on this board. Leave blank for all boards.
+      default: []
+      selector:
+        entity:
+          domain: calendar
+          integration: hakanban
+          multiple: true
+    from_list:
+      name: From list
+      description: >
+        Only trigger when a card moves from one of these lists.
+        Leave blank for any source list. Only used by "Card moved".
+      default: []
+      selector:
+        entity:
+          domain: todo
+          integration: hakanban
+          multiple: true
+    to_list:
+      name: To list
+      description: >
+        Only trigger when a card is in (or moves to) one of these lists.
+        Leave blank for any list.
+      default: []
+      selector:
+        entity:
+          domain: todo
+          integration: hakanban
+          multiple: true
+    action:
+      name: Action
+      description: What to do when the trigger fires.
+      default: []
+      selector:
+        action:
+
+variables:
+  card_id: "{{ trigger.event.data.card_id }}"
+  title: "{{ trigger.event.data.title | default('') }}"
+  from_list_id: "{{ trigger.event.data.from_column | default('') }}"
+  to_list_id: "{{ trigger.event.data.to_column | default('') }}"
+  list_id: "{{ trigger.event.data.column_id | default('') }}"
+  board_ids: "{{ board | map('state_attr', 'board_id') | select('ne', None) | list if board else [] }}"
+  from_column_ids: "{{ from_list | map('state_attr', 'column_id') | select('ne', None) | list if from_list else [] }}"
+  to_column_ids: "{{ to_list | map('state_attr', 'column_id') | select('ne', None) | list if to_list else [] }}"
+
+trigger:
+  - platform: event
+    event_type: !input trigger_event
+
+condition:
+  - condition: template
+    value_template: >
+      {{ (board_ids | length == 0 or trigger.event.data.board_id in board_ids) and
+         (from_column_ids | length == 0 or from_list_id in from_column_ids) and
+         (to_column_ids | length == 0 or to_list_id in to_column_ids or list_id in to_column_ids) }}
+
+action: !input action
+
+mode: queued

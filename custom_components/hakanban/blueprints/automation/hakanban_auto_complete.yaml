@@ -1,0 +1,49 @@
+blueprint:
+  name: Hakanban — Auto-complete cards in a list
+  description: >
+    Automatically marks cards as completed when they are moved into a
+    specific list. Also marks cards as active again when moved out of
+    that list. Useful for a "Done" or "Finished" list.
+  domain: automation
+  source_url: https://github.com/XanthiaJo/hakanban
+  input:
+    done_list:
+      name: Done list
+      description: The list that marks cards as complete when they are moved into it.
+      selector:
+        entity:
+          domain: todo
+          integration: hakanban
+
+variables:
+  done_column_id: "{{ state_attr(done_list, 'column_id') }}"
+
+trigger:
+  - platform: event
+    event_type: hakanban_card_moved
+    id: moved
+
+condition:
+  - condition: template
+    value_template: "{{ done_column_id != '' and done_column_id in [trigger.event.data.from_column, trigger.event.data.to_column] }}"
+
+action:
+  - choose:
+      - conditions:
+          - condition: template
+            value_template: "{{ trigger.event.data.to_column == done_column_id }}"
+        sequence:
+          - service: hakanban.update_card
+            data:
+              card_id: "{{ trigger.event.data.card_id }}"
+              status: completed
+      - conditions:
+          - condition: template
+            value_template: "{{ trigger.event.data.from_column == done_column_id }}"
+        sequence:
+          - service: hakanban.update_card
+            data:
+              card_id: "{{ trigger.event.data.card_id }}"
+              status: needs_action
+
+mode: queued
