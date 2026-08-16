@@ -193,13 +193,16 @@ export class HakanbanCardDetail extends HTMLElement {
       palette.appendChild(sw);
     });
 
-    // Due
+    // Due / complete
     $("#hk-due").addEventListener("change", (e) => {
       const v = e.target.value;
       api.updateCard(c.id, { due: v ? v + ":00" : null });
     });
     $("#hk-due-complete").addEventListener("change", (e) =>
-      api.updateCard(c.id, { due_complete: e.target.checked })
+      api.updateCard(c.id, {
+        due_complete: e.target.checked,
+        status: e.target.checked ? "completed" : "needs_action",
+      })
     );
     $("#hk-due-clear").addEventListener("click", () =>
       api.updateCard(c.id, { due: null, due_complete: false })
