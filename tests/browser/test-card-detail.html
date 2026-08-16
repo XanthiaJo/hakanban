@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Hakanban card-detail tests</title>
+    <style>
+      body { background: #1d2125; color: #e6edf3; font-family: monospace; padding: 20px; }
+      .pass { color: #61bd4f; }
+      .fail { color: #eb5a46; }
+      :root {
+        --primary-text-color: #e6edf3;
+        --secondary-text-color: #9aa4b2;
+        --primary-color: #4f9dff;
+        --card-background-color: #22272e;
+        --ha-card-background: #2d333b;
+        --divider-color: rgba(255,255,255,.12);
+        --app-header-background-color: #1b3a5b;
+        --app-header-text-color: #fff;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Card detail tests</h1>
+    <div id="results"></div>
+    <div id="host" style="position:absolute;left:-9999px;top:0;width:800px;height:600px"></div>
+
+    <script type="module">
+      import "/custom_components/hakanban/static/card-detail.js";
+
+      const results = [];
+
+      function check(name, cond) {
+        results.push({ name, cond });
+        const el = document.createElement("div");
+        el.className = cond ? "pass" : "fail";
+        el.textContent = (cond ? "PASS" : "FAIL") + " - " + name;
+        document.getElementById("results").appendChild(el);
+      }
+
+      function finish() {
+        const passed = results.filter((r) => r.cond).length;
+        const total = results.length;
+        const summary = document.createElement("div");
+        summary.style.marginTop = "20px";
+        summary.textContent = `${passed}/${total} passed`;
+        document.getElementById("results").appendChild(summary);
+      }
+
+      const card = {
+        id: "card1",
+        number: 1,
+        title: "Test card",
+        description: "",
+        column_id: "c1",
+        due: null,
+        due_complete: false,
+        status: "needs_action",
+        labels: [],
+        checklists: [],
+        comments: [],
+        archived: false,
+      };
+      const board = {
+        id: "b1",
+        columns: [
+          { id: "c1", title: "To Do" },
+          { id: "c2", title: "Done" },
+        ],
+        labels: [],
+      };
+
+      let lastUpdate = null;
+      const api = {
+        updateCard(id, changes) {
+          lastUpdate = { id, changes };
+          return Promise.resolve({});
+        },
+      };
+
+      const host = document.getElementById("host");
+      const detail = document.createElement("hakanban-card-detail");
+      detail.setContext({ card, board, api, onClose: () => {} });
+      host.appendChild(detail);
+
+      // Run tests after the component renders.
+      requestAnimationFrame(() => {
+        const checkbox = detail.shadowRoot.querySelector("#hk-due-complete");
+        check("complete checkbox renders", checkbox !== null);
+
+        if (checkbox) {
+          checkbox.checked = true;
+          checkbox.dispatchEvent(new Event("change"));
+
+          check("checking complete sets status", lastUpdate && lastUpdate.changes.status === "completed");
+          check("checking complete sets due_complete", lastUpdate && lastUpdate.changes.due_complete === true);
+
+          lastUpdate = null;
+          checkbox.checked = false;
+          checkbox.dispatchEvent(new Event("change"));
+
+          check("unchecking complete clears status", lastUpdate && lastUpdate.changes.status === "needs_action");
+          check("unchecking complete clears due_complete", lastUpdate && lastUpdate.changes.due_complete === false);
+        }
+
+        finish();
+      });
+    </script>
+  </body>
+</html>
