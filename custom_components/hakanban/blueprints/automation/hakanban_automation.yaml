@@ -1,5 +1,5 @@
 blueprint:
-  name: Hakanban — Card automation
+  name: Hakanban — Card event trigger
   description: >
     React to a Hakanban card being created, moved between lists, completed,
     or deleted. Choose the trigger event, optionally filter by board and

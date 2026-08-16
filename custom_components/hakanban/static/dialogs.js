@@ -122,9 +122,7 @@ export function openBlueprintDialog(shadowRoot, api) {
   back.innerHTML = `
       <div class="hk-modal hk-dialog" role="dialog" aria-modal="true" style="width:min(480px,100%)">
         <h2>Automation blueprints</h2>
-        <div class="hk-opt-help" style="margin-bottom:12px">Blueprints allow for specified automations to be set up quicker than from scratch.
-          Tick a blueprint to install it into Home Assistant. You will then find it in Settings → Automations & Scenes → Blueprints.
-        </div>
+        <div class="hk-opt-help" style="margin-bottom:12px">Blueprints give you a head start with common automations. Tick one to install it, then find it in Settings → Automations & Scenes → Blueprints. You can also build automations manually using Hakanban entities and events.</div>
         <div id="hk-bp-list" style="display:flex;flex-direction:column;gap:8px">
           <div style="color:var(--secondary-text-color)">Loading…</div>
         </div>
