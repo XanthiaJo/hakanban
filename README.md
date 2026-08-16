@@ -1,6 +1,6 @@
 > **This fork** is based on Neil Ellis's [Hakanban](https://github.com/neilellis/hakanban) `v0.1.8` and adds several frontend and UX features on top of it.
 >
-> ## What's added in this fork (v0.1.10)
+> ## What's added in this fork (v0.1.11)
 >
 > - **Inline checklists** — checklist items render and are toggleable directly on the card face.
 > - **Markdown card descriptions** — descriptions are rendered as formatted markdown on the card.
@@ -8,6 +8,11 @@
 > - **Display options dialog** — a ⚙ toolbar menu lets you toggle every card element (title, description, checklists, labels, card number, due date, comments, assignees) and control comment sub-options (user, moved from/to, date, time).
 > - **Full toolbar in the Lovelace card** — the dashboard card now embeds the full panel, so board tabs, undo/redo, search, filter, background, rename, and delete are all available on dashboards.
 > - **Collapsible toolbar** — hover the bottom edge of the toolbar to highlight the seam in the theme primary colour, click to collapse or expand. State is remembered in `localStorage`.
+> - **Automation blueprints** — a 🧩 toolbar button opens a blueprint manager where you can install pre-built automation blueprints on demand. Three blueprints are included:
+>   - **Card event trigger** — react to card created, moved, completed, or deleted events with board/list filters and a standard action selector.
+>   - **Auto-complete cards** — automatically mark cards as completed when moved into a list, and active again when moved out.
+>   - **Scheduled check for due cards** — run daily at a chosen time and trigger an action for each card due today, due in N days/weeks/months, or overdue.
+> - **`hakanban.get_due_cards` service** — returns cards matching a due date criteria (due today, due in N days, overdue, or any overdue) with optional board filtering and completed-card inclusion.
 > - **Browser test harness** for the display options.
 >
 
@@ -149,6 +154,7 @@ List the column entities with `./scripts/ha states todo` and inspect one with
 | `hakanban.add_comment` | `card_id`, `text` | Add a comment to a card. |
 | `hakanban.create_board` | `title` | Create a board. |
 | `hakanban.create_column` | `board_id`, `title` | Create a column on a board. |
+| `hakanban.get_due_cards` | `board_ids?`, `on_date?`, `days_offset?`, `include_completed?`, `overdue?` | Return cards matching a due date criteria. |
 
 The native `todo.*` services are also available on every column entity (great for Assist and
 voice).
@@ -162,7 +168,7 @@ Every mutation fires a Home Assistant event you can trigger automations on:
 | `hakanban_card_created` | `board_id`, `column_id`, `card_id`, `title` |
 | `hakanban_card_updated` | `board_id`, `card_id`, `column_id?`, `action?` |
 | `hakanban_card_moved` | `board_id`, `card_id`, `from_column`, `to_column` |
-| `hakanban_card_completed` | `board_id`, `card_id`, `column_id` |
+| `hakanban_card_completed` | `board_id`, `card_id`, `column_id`, `title` |
 | `hakanban_card_deleted` | `board_id`, `card_id` |
 | `hakanban_board_changed` | `board_id`, `action` |
 
@@ -210,6 +216,24 @@ automation:
 More recipes — nightly shopping-list population, chore-complete on motion, building a column
 from a script — are in **[docs/automations.md](docs/automations.md)**.
 
+### Automation blueprints
+
+Hakanban ships built-in automation blueprints that you can install on demand from the panel —
+no blueprints are forced into your config by default. Click the **🧩** button in the toolbar to
+open the blueprint manager, tick the ones you want, and they appear in **Settings → Automations
+& Scenes → Blueprints**.
+
+Three blueprints are included:
+
+| Blueprint | Description |
+|-----------|-------------|
+| **Card event trigger** | React to a card being created, moved, completed, or deleted. Filter by board and lists (multi-select dropdowns), then run any action. Exposes `card_id`, `title`, `from_list`, `to_list` as variables. |
+| **Auto-complete cards** | Automatically mark cards as completed when moved into a chosen list, and mark them active again when moved out. Great for a "Done" list. |
+| **Scheduled check for due cards** | Run daily at a chosen time and trigger an action for each card matching a due date criteria: overdue (any or by N days/weeks/months), due today, or due in N days/weeks/months. Exposes `card_id`, `card_title`, `card_due`, `card_status` as variables. |
+
+You can also build automations manually using Hakanban entities and events — the blueprints are
+just a head start.
+
 ---
 
 ## Architecture
@@ -245,7 +269,7 @@ documented in **[docs/PROTOCOL.md](docs/PROTOCOL.md)**.
 ## Contributing
 
 Issues and pull requests are welcome at
-[`neilellis/hakanban`](https://github.com/neilellis/hakanban). Please open an issue to discuss
+[`XanthiaJo/hakanban`](https://github.com/XanthiaJo/hakanban). Please open an issue to discuss
 larger changes first, and keep frontend/backend changes consistent with
 [docs/PROTOCOL.md](docs/PROTOCOL.md), which is the shared contract between the integration, the
 websocket API and the frontend.
