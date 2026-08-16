@@ -75,12 +75,14 @@ tests/             # plain `python3 tests/*.py` (HA is stubbed, real package mod
 ## Dev / release workflow
 
 1. Make the change; update **README.md** and **docs/PROTOCOL.md** if behaviour/contract changed.
-2. **Bump the version in `manifest.json` — patch segment only** (e.g. `0.1.3` → `0.1.4`). This is a
-   firm user preference: never touch major/minor unless explicitly told.
-3. Run the test suites.
-4. Commit + push **only when asked**. Conventional, imperative subject describing the behaviour.
-5. **Cut a GitHub release so HACS sees the update** — HACS keys off tags/releases, not commits:
-   `gh release create vX.Y.Z --title "vX.Y.Z" --notes "..."`. Verify with
-   `gh release view vX.Y.Z` that `isDraft=false`. Tag = `v` + the manifest version.
+2. Run the test suites.
+3. Commit + push **only when asked**. Conventional Commits format (`type(scope): description`).
+   The commit type determines the version bump on release (see `docs/VERSIONING.md`).
+4. **Do NOT manually bump `manifest.json` or create tags/releases.** The GitHub Actions workflow
+   handles versioning automatically when a `release:` commit is pushed to `dev`:
+   - It calculates the version from commits since the last tag
+   - Amends the release commit with the version (e.g. `release: v0.1.11`)
+   - Updates `manifest.json`, creates the tag, merges `dev` to `main`, and creates the GitHub release
+5. To trigger a release: push an empty commit `release: prepare release` to `dev`.
 6. Updating in HA: HACS → Hakanban → Update. A **new platform** (e.g. adding `calendar`) needs a full
    HA restart; a **frontend-only** change just needs a browser hard-refresh.

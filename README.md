@@ -249,7 +249,12 @@ read and write the same data, so the native HA todo card, Assist, the `todo.*` s
 `hakanban.*` services and the panel all stay in sync with **no sync layer**.
 
 The full data model, websocket command schemas, event payloads and service signatures are
-documented in **[docs/PROTOCOL.md](docs/PROTOCOL.md)**.
+documented in **[docs/PROTOCOL.md](docs/PROTOCOL.md)**. For contribution guidelines, versioning,
+branch workflow, and CI/CD details, see:
+
+- **[docs/VERSIONING.md](docs/VERSIONING.md)** — commit conventions and version calculation
+- **[docs/BRANCH_WORKFLOW.md](docs/BRANCH_WORKFLOW.md)** — branch strategy and release process
+- **[docs/GITHUB_ACTIONS.md](docs/GITHUB_ACTIONS.md)** — CI/CD pipeline documentation
 
 ---
 
