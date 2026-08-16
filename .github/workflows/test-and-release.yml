@@ -20,14 +20,6 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Install system browsers
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y chromium-browser chromium-chromedriver
-
-      - name: Install Python test dependencies
-        run: python3 -m pip install selenium
-
       - name: Run logic tests
         run: python3 tests/test_logic.py
 
@@ -37,8 +29,8 @@ jobs:
       - name: Run protocol drift test
         run: python3 tests/test_protocol_drift.py
 
-      - name: Run browser tests
-        run: python3 tests/browser/run_browser_tests.py
+      - name: Run todo entity tests
+        run: python3 tests/test_todo.py
 
   release:
     name: Create Release
