@@ -151,7 +151,7 @@ jobs:
       - name: Update manifest.json and README versions
         run: |
           sed -i 's/"version": ".*"/"version": "${{ steps.version.outputs.new_version }}"/' custom_components/hakanban/manifest.json
-          sed -i 's/What.s added in this fork (v[0-9.]\+)/What'"'"'s added in this fork (v${{ steps.version.outputs.new_version }}/' README.md
+          sed -i 's/What.s added in this fork (v[0-9.]\+)/What'"'"'s added in this fork (v${{ steps.version.outputs.new_version }})/' README.md
 
       - name: Amend release commit
         run: |

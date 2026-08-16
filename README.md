@@ -1,6 +1,6 @@
 > **This fork** is based on Neil Ellis's [Hakanban](https://github.com/neilellis/hakanban) `v0.1.8` and adds several frontend and UX features on top of it.
 >
-> ## What's added in this fork (v0.2.0
+> ## What's added in this fork (v0.2.0)
 >
 > - **Inline checklists** — checklist items render and are toggleable directly on the card face.
 > - **Markdown card descriptions** — descriptions are rendered as formatted markdown on the card.
