@@ -194,7 +194,7 @@ jobs:
             local title="$1"
             local content="$2"
             if [ -n "$content" ]; then
-              BODY="${BODY}## ${title}\n\n${content}\n\n"
+              BODY="${BODY}## ${title}"$'\n\n'"${content}"$'\n\n'
             fi
           }
 
