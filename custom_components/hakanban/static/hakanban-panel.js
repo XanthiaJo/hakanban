@@ -5,7 +5,7 @@ import { STYLES } from "./styles.js";
 import { HakanbanApi } from "./api.js";
 import { escapeHtml, contrastText, debounce } from "./util.js";
 import { loadDisplayOpts } from "./display-opts.js";
-import { openOptionsDialog } from "./dialogs.js";
+import { openOptionsDialog, openBlueprintDialog } from "./dialogs.js";
 import "./board-view.js";
 
 export class HakanbanPanel extends HTMLElement {
@@ -150,6 +150,7 @@ export class HakanbanPanel extends HTMLElement {
       <input class="hk-search" id="search" type="search" placeholder="Search cards…" value="${escapeHtml(this._query)}">
       <button class="hk-iconbtn" id="filter-btn" title="Filter by label">⚑</button>
       <button class="hk-iconbtn" id="del-board" title="Delete board">🗑</button>
+      <button class="hk-iconbtn" id="bp-btn" title="Automation blueprints">🧩</button>
       <button class="hk-iconbtn" id="opts-btn" title="Board options">⚙</button>`;
 
     tb.querySelector("#undo-btn").addEventListener("click", () => this._api.undo());
@@ -186,6 +187,9 @@ export class HakanbanPanel extends HTMLElement {
       openOptionsDialog(this.shadowRoot, this._displayOpts, board, this._api, (opts) => {
         if (this._boardEl) this._boardEl.displayOpts = opts;
       });
+    });
+    tb.querySelector("#bp-btn").addEventListener("click", () => {
+      openBlueprintDialog(this.shadowRoot, this._api);
     });
 
     const search = tb.querySelector("#search");

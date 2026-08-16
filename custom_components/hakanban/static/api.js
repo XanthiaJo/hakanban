@@ -93,4 +93,14 @@ export class HakanbanApi {
   toggleCheckItem(card_id, checklist_id, item_id, done) {
     return this._send("toggle_check_item", { card_id, checklist_id, item_id, done });
   }
+
+  listBlueprints() {
+    return this._send("list_blueprints");
+  }
+  installBlueprint(filename) {
+    return this._send("install_blueprint", { filename });
+  }
+  uninstallBlueprint(filename) {
+    return this._send("uninstall_blueprint", { filename });
+  }
 }

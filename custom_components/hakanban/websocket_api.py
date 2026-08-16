@@ -14,6 +14,7 @@ from homeassistant.components import websocket_api
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
 
+from .blueprints import blueprint_status, install_blueprint, uninstall_blueprint
 from .const import DATA_MANAGER, DOMAIN, SIGNAL_BOARDS_UPDATED
 from .data import HakanbanData, HakanbanError
 
@@ -369,6 +370,42 @@ def ws_toggle_check_item(hass, connection, msg, manager: HakanbanData):
     return {"ok": True}
 
 
+# ------------------------------------------------------------------- blueprints
+@websocket_api.websocket_command({vol.Required("type"): f"{DOMAIN}/list_blueprints"})
+@websocket_api.async_response
+async def ws_list_blueprints(hass: HomeAssistant, connection: Any, msg: dict[str, Any]) -> None:
+    result = await hass.async_add_executor_job(blueprint_status, hass)
+    connection.send_result(msg["id"], result)
+
+
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): f"{DOMAIN}/install_blueprint",
+        vol.Required("filename"): str,
+    }
+)
+@websocket_api.async_response
+async def ws_install_blueprint(hass: HomeAssistant, connection: Any, msg: dict[str, Any]) -> None:
+    try:
+        await hass.async_add_executor_job(install_blueprint, hass, msg["filename"])
+    except ValueError as err:
+        connection.send_error(msg["id"], "invalid_request", str(err))
+        return
+    connection.send_result(msg["id"], {"installed": msg["filename"]})
+
+
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): f"{DOMAIN}/uninstall_blueprint",
+        vol.Required("filename"): str,
+    }
+)
+@websocket_api.async_response
+async def ws_uninstall_blueprint(hass: HomeAssistant, connection: Any, msg: dict[str, Any]) -> None:
+    await hass.async_add_executor_job(uninstall_blueprint, hass, msg["filename"])
+    connection.send_result(msg["id"], {"uninstalled": msg["filename"]})
+
+
 _COMMANDS = (
     ws_subscribe,
     ws_get,
@@ -393,4 +430,7 @@ _COMMANDS = (
     ws_add_checklist,
     ws_add_check_item,
     ws_toggle_check_item,
+    ws_list_blueprints,
+    ws_install_blueprint,
+    ws_uninstall_blueprint,
 )
