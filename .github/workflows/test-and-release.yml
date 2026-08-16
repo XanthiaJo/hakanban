@@ -37,7 +37,7 @@ jobs:
     name: Create Release
     needs: test
     runs-on: ubuntu-latest
-    if: success() && (startsWith(github.event.head_commit.message, 'release:') || contains(github.event.head_commit.message, '[release]'))
+    if: success() && startsWith(github.event.head_commit.message, 'release:')
     steps:
       - uses: actions/checkout@v4
         with:
